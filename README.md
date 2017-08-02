@@ -7,7 +7,12 @@ Designing this to work in browser and in node.
 
  - [x] Construcatable inheritance from EventTarget
  - [x] addEventListener
- - [ ] removeEventListener
+ - [x] removeEventListener
  - [ ] dispatchEvent
+    - [x] Working with custom-crafted events which pass a `eventOptions.shouldHandle` test
+    - [ ] Handlers with option "once" remove themselves consistently
+    - [ ] Return value reflects `event.preventDefault` invocation
+    - [ ] `event.stopPropagation` (no bubbling, if capture phase, no non-capture phase)
+    - [ ] `event.stopImmediatePropagation` (no further handlers invoked)
  - [ ] CustomEvent
- 
+ - [ ] Event bubbling; being able to set a parent/child relation between two CustomEventTarget objects
