@@ -88,6 +88,34 @@ class CustomEventTarget extends ConstructableEventTarget {
         listeners.splice(listenerIndex, 1);
     }
 
+    dispatchEvent(event) {
+        if (!(this instanceof CustomEventTarget)) {
+            throw new TypeError('Illegal invocation');
+        }
+
+        const {references, listeners} = this[listenerSymbol];
+
+        const {capture, noCapture} = listeners.reduce((o, item) => {
+            if (item.eventType === event.type) {
+                if (item.options.capture) o.capture.push(item);
+                else o.noCapture.push(item);
+            }
+            return o;
+        }, {
+            capture: [],
+            noCapture: []
+        });
+
+        capture
+            .filter(item => item.options.shouldHandle(event, true, this, item.listener))
+            .forEach(item => {item.listener.handle(event, this)});
+        noCapture
+            .filter(item => item.options.shouldHandle(event, false, this, item.listener))
+            .forEach(item => {item.listener.handle(event, this)});
+
+        return true;
+    }
+
     get [listenerSymbol]() {
         return CustomEventTarget[listenerSymbol].get(this[targetSymbol]);
     }
