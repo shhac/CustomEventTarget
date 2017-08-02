@@ -31,8 +31,7 @@ class CustomEventTarget extends ConstructableEventTarget {
             ? new EventOptions({capture: pOptions})
             : new EventOptions(pOptions);
 
-        const listenerMap = CustomEventTarget[listenerSymbol];
-        const {references, listeners} = listenerMap.get(this[targetSymbol]);
+        const {references, listeners} = this[listenerSymbol];
 
         const eventHandlerList = _getListenerReferences(references, eventType, pListener, options);
 
@@ -60,6 +59,37 @@ class CustomEventTarget extends ConstructableEventTarget {
 
             return eventHandlerList;
         }
+    }
+
+    removeEventListener(eventType, pListener, pOptions) {
+        if (!(this instanceof CustomEventTarget)) {
+            throw new TypeError('Illegal invocation');
+        }
+
+        const options = typeof pOptions === 'boolean'
+            ? new EventOptions({capture: pOptions})
+            : new EventOptions(pOptions);
+
+        const {references, listeners} = this[listenerSymbol];
+
+        const handlerMap = references.get(pListener);
+        if (!handlerMap) return;
+
+        const eventHandlerList = handlerMap.get(eventType);
+        if (!eventHandlerList) return;
+
+        const optionIndex = eventHandlerList.findIndex(item => options.equal(item));
+        if (optionIndex === -1) return;
+
+        const foundOptions = eventHandlerList[optionIndex];
+        eventHandlerList.splice(optionIndex, 1);
+
+        const listenerIndex = listeners.findIndex(item => item.options === foundOptions);
+        listeners.splice(listenerIndex, 1);
+    }
+
+    get [listenerSymbol]() {
+        return CustomEventTarget[listenerSymbol].get(this[targetSymbol]);
     }
 
     static get [listenerSymbol]() {
